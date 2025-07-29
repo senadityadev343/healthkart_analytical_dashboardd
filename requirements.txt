@@ -1,0 +1,14 @@
+streamlit
+pandas
+numpy
+plotly
+faker
+reportlab
+seaborn
+prophet
+causalimpact
+lifelines
+scipy
+statsmodels
+scikit-learn
+google-generativeai
