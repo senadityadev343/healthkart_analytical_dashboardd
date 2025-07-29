@@ -2654,4 +2654,3 @@ def generate_pdf(report):
 
 if __name__ == "__main__":
     main()
-    incremental_roas
