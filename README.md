@@ -31,7 +31,7 @@ A Streamlit-based interactive dashboard for synthetic influencer marketing campa
 
 ## 🛠️ Tech Stack & Dependencies
 
-- Python 3.8+  
+- Python 3.10+  
 - Streamlit  
 - Pandas, NumPy  
 - Plotly (express & graph_objects)  
