@@ -1514,7 +1514,7 @@ def main():
                         radialaxis=dict(
                             visible=True,
                             range=[0, max(top_5['roas'].max(), top_5['avg_order_value'].max()/1000, 
-                                         top_5['conversion_rate'].max()*100, top_5['revenue'].max()/10000)]
+                                     top_5['conversion_rate'].max()*100, top_5['revenue'].max()/10000)]
                         )),
                     showlegend=True,
                     title="Top 5 Influencers Performance Radar Chart",
@@ -1532,28 +1532,39 @@ def main():
                     """
                 )
                 
-            
                 display_table = top_influencers[['name', 'tier', 'category', 'roas', 'avg_order_value', 'conversion_rate', 'revenue']]
                 display_table['roas'] = display_table['roas'].round(2)
                 display_table['avg_order_value'] = display_table['avg_order_value'].round(0)
                 display_table['conversion_rate'] = display_table['conversion_rate'].round(3)
                 st.dataframe(display_table, use_container_width=True)
                 
-                
                 col1, col2 = st.columns(2)
                 with col1:
-                    treemap_data = influencer_metrics.copy()
-                    treemap_data['size'] = treemap_data['revenue'] 
-                    treemap_data['color'] = treemap_data['roas']    
-                    
+                    # FIXED TREEMAP CODE
+                    # Aggregate data at tier level
+                    tier_agg = influencer_metrics.groupby('tier').agg(
+                        total_revenue=('revenue', 'sum'),
+                        avg_roas=('roas', 'mean')
+                    ).reset_index()
+    
+                    # Combine tier aggregates with individual influencer data
+                    treemap_data = pd.concat([
+                        tier_agg.assign(name="All", influencer_id=""),
+                        influencer_metrics.assign(total_revenue=influencer_metrics['revenue'])
+                    ])
+    
                     fig_roas = px.treemap(
                         treemap_data,
-                        path=['tier', 'name'],
-                        values='size',
-                        color='color',
+                        path=['tier', 'name', 'influencer_id'],
+                        values='total_revenue',
+                        color='avg_roas',
                         color_continuous_scale='RdYlGn',
                         title="ROAS vs Revenue by Tier (Treemap)",
-                        template="plotly_white"
+                        template="plotly_white",
+                        hover_data=['avg_roas', 'total_revenue']
+                    )
+                    fig_roas.update_traces(
+                        textinfo="label+value+percent parent"
                     )
                     add_campaign_interpretations(
                         fig_roas,
@@ -1607,12 +1618,10 @@ def main():
             st.subheader("Video Engagement Ratios")
             st.plotly_chart(plot_video_engagement_ratios(posts_df), use_container_width=True)
         
-        
             st.subheader("Audience Demographics Heatmap")
             st.plotly_chart(plot_audience_heatmap(filtered_inf), use_container_width=True)
             
             st.subheader("👥 Audience Analysis")
-            
             
             col1, col2 = st.columns(2)
             with col1:
@@ -1636,7 +1645,6 @@ def main():
                 )
                 st.plotly_chart(fig_gender, use_container_width=True)
             
-        
             location_dist = filtered_inf['location'].value_counts().head(10)
             fig_location = px.bar(
                 x=location_dist.values,
@@ -1647,7 +1655,6 @@ def main():
             )
             fig_location.update_layout(xaxis_title="Number of Influencers", yaxis_title="Location")
             st.plotly_chart(fig_location, use_container_width=True)
-            
             
             verified_analysis = filtered_inf.groupby('verified').agg({
                 'influencer_id': 'count',
@@ -1668,7 +1675,6 @@ def main():
                 st.plotly_chart(fig_verified, use_container_width=True)
             
             with col2:
-                
                 engagement_pie_data = verified_analysis.copy()
                 engagement_pie_data['engagement_percentage'] = (engagement_pie_data['engagement_rate'] * 100).round(2)
                 
@@ -1680,7 +1686,6 @@ def main():
                     template="plotly_white"
                 )
                 st.plotly_chart(fig_engagement, use_container_width=True)
-            
             
             st.subheader("Audience Segmentation")
             audience_data = filtered_inf.groupby(['audience_gender', 'audience_age']).agg({
@@ -1709,11 +1714,11 @@ def main():
                 - Use insights for targeted campaign planning
                 """
             )           
+            
             st.subheader("📹 Video Content Performance")
             video_posts = posts_df[posts_df['content_type'].isin(['Video', 'Reel'])]
             
             if not video_posts.empty:
-            
                 video_kpis = video_posts.groupby('platform').agg({
                     'video_views': ['sum', 'mean', 'count'],
                     'likes': ['sum', 'mean'],
@@ -1721,11 +1726,9 @@ def main():
                 }).round(0)
                 video_kpis.columns = ['Total Views', 'Avg Views', 'Video Count', 'Total Likes', 'Avg Likes', 'Total Comments', 'Avg Comments']
                 
-                
                 col1, col2 = st.columns(2)
                 
                 with col1:
-                    
                     views_data = video_kpis[['Total Views', 'Avg Views']].reset_index()
                     fig_views = px.bar(
                         views_data,
@@ -1769,7 +1772,6 @@ def main():
                         - Outliers highlight exceptional content performance
                         """
                     )
-                
                 
                 st.dataframe(video_kpis, use_container_width=True)
                 
@@ -2654,3 +2656,4 @@ def generate_pdf(report):
 
 if __name__ == "__main__":
     main()
+
