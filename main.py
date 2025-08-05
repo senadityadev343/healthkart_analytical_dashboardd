@@ -169,22 +169,22 @@ competitors = {
 def seasonal_factor(month):
     """Return a randomized seasonal factor based on the month."""
     if month in [1, 7, 11]:
-        return round(random.uniform(1.4, 1.7), 2)  # moderately high
+        return round(random.uniform(1.4, 1.7), 2) 
     elif month in [6, 3, 9]:
-        return round(random.uniform(1.05, 1.25), 2)  # medium
+        return round(random.uniform(1.05, 1.25), 2) 
     elif month in [10, 2, 12]:
-        return round(random.uniform(1.35, 1.46), 2)  # high
+        return round(random.uniform(1.35, 1.46), 2)  
     elif month in [4, 5, 8]:
-        return round(random.uniform(1.37, 1.54), 2)  # very high
+        return round(random.uniform(1.37, 1.54), 2)  
     else:
-        return round(random.uniform(1.14, 1.38), 2)  # fallback
+        return round(random.uniform(1.14, 1.38), 2)  
 
 @st.cache_data(ttl=3600)
 def generate_data():
     """Enhanced data generation combining best features from both files"""
     
     influencers = []
-    for i in range(150):
+    for i in range(random.randint(50,150)):
         tier = random.choice(list(tiers.keys()))
         min_f, max_f = tiers[tier]
         followers = random.randint(min_f, max_f)
@@ -1225,7 +1225,7 @@ def main():
         posts_for_merge_full = posts_df[['post_id', 'content_type']].drop_duplicates()
         merged_df = pd.merge(filtered_tracking, posts_for_merge_full, on='post_id', how='left')
 
-    st.title("📊 HealthKart Influencer Campaign Dashboard")
+    st.title("📊 HealthKart's Influencer Campaign")
     st.markdown("Comprehensive ROI tracking and optimization for influencer marketing campaigns")
 
     month = pd.to_datetime(start_date).month
@@ -2656,4 +2656,5 @@ def generate_pdf(report):
 
 if __name__ == "__main__":
     main()
+
 
